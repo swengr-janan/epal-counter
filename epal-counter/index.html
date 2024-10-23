@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EPAL = 1000 SACK</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background-image: url("./epal-bg.png");
+        background-size: cover;
+        background-position: center;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        color: white;
+        text-shadow: 1px 1px 2px black;
+      }
+
+      #container {
+        text-align: center;
+        background-color: rgba(0, 0, 0, 0.6);
+        padding: 30px;
+        border-radius: 10px;
+        width: 90%;
+        max-width: 400px;
+      }
+
+      h1 {
+        font-size: 2em;
+        margin-bottom: 10px;
+      }
+
+      p {
+        font-size: 1.2em;
+        margin: 10px 0;
+      }
+
+      button {
+        padding: 10px 20px;
+        font-size: 1.1em;
+        margin-top: 20px;
+        background-color: #ff4500;
+        border: none;
+        color: white;
+        cursor: pointer;
+        width: 100%;
+      }
+
+      button:hover {
+        background-color: #ff6347;
+      }
+
+      #resetButton {
+        background-color: #555;
+        margin-top: 10px;
+      }
+
+      #resetButton:hover {
+        background-color: #888;
+      }
+
+      @media only screen and (max-width: 768px) {
+        h1 {
+          font-size: 1.8em;
+        }
+
+        p {
+          font-size: 1.1em;
+        }
+
+        button {
+          padding: 12px;
+          font-size: 1.1em;
+        }
+
+        #container {
+          padding: 20px;
+        }
+      }
+
+      @media only screen and (max-width: 480px) {
+        h1 {
+          font-size: 1.6em;
+        }
+
+        p {
+          font-size: 1em;
+        }
+
+        button {
+          font-size: 1em;
+          padding: 10px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="container">
+      <h1>EPAL Counter</h1>
+      <p>Only one 'EPAL' allowed per user.</p>
+      <button id="epalButton">Send "EPAL"</button>
+      <p id="counter">EPAL Count: <span id="epalCount">0</span></p>
+      <p id="message"></p>
+      <!-- <button id="resetButton">Reset Counter</button> -->
+    </div>
+
+    <script>
+      let epalCount = localStorage.getItem("epalCount")
+        ? parseInt(localStorage.getItem("epalCount"))
+        : 0;
+      document.getElementById("epalCount").textContent = epalCount;
+
+      let userHasSentEpal = localStorage.getItem("hasSentEpal");
+      const epalButton = document.getElementById("epalButton");
+
+      if (userHasSentEpal) {
+        epalButton.disabled = true;
+        document.getElementById("message").textContent =
+          "You can only send 'EPAL' once!";
+      }
+
+      epalButton.addEventListener("click", function () {
+        if (!userHasSentEpal) {
+          epalCount++;
+          document.getElementById("epalCount").textContent = epalCount;
+          localStorage.setItem("epalCount", epalCount);
+          localStorage.setItem("hasSentEpal", true);
+          epalButton.disabled = true;
+          document.getElementById(
+            "message"
+          ).textContent = `Thank you for sending "EPAL"!`;
+        } else {
+          document.getElementById("message").textContent =
+            "You can only send 'EPAL' once!";
+        }
+      });
+
+      // // Handle Reset button click
+      // const resetButton = document.getElementById("resetButton");
+      // resetButton.addEventListener("click", function () {
+      //   localStorage.removeItem("epalCount"); // Clear EPAL count from localStorage
+      //   localStorage.removeItem("hasSentEpal"); // Clear user's submission status
+      //   epalCount = 0; // Reset the count variable
+      //   document.getElementById("epalCount").textContent = epalCount; // Update the count display
+      //   epalButton.disabled = false; // Enable the EPAL button
+      //   document.getElementById("message").textContent = ""; // Clear any messages
+      // });
+    </script>
+  </body>
+</html>
