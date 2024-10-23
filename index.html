@@ -104,50 +104,82 @@
       <button id="epalButton">Send "EPAL"</button>
       <p id="counter">EPAL Count: <span id="epalCount">0</span></p>
       <p id="message"></p>
-      <!-- <button id="resetButton">Reset Counter</button> -->
     </div>
 
-    <script>
-      let epalCount = localStorage.getItem("epalCount")
-        ? parseInt(localStorage.getItem("epalCount"))
-        : 0;
-      document.getElementById("epalCount").textContent = epalCount;
+    <!-- Firebase SDKs -->
+    <script type="module">
+      // Import Firebase SDKs
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+      import {
+        getDatabase,
+        ref,
+        get,
+        set,
+        onValue,
+        runTransaction,
+      } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
 
-      let userHasSentEpal = localStorage.getItem("hasSentEpal");
+      // Your Firebase configuration
+      const firebaseConfig = {
+        apiKey: "AIzaSyCXWu9Jnl-y09KrLxTFqQsVH03giGIoqEE",
+        authDomain: "epal-counter.firebaseapp.com",
+        databaseURL:
+          "https://epal-counter-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "epal-counter",
+        storageBucket: "epal-counter.appspot.com",
+        messagingSenderId: "438870722708",
+        appId: "1:438870722708:web:079b7b05d373ac60fa0c81",
+        measurementId: "G-YYNJGHC9ZC",
+      };
+
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const database = getDatabase(app);
+
+      // References
+      const epalCountRef = ref(database, "epalCount");
       const epalButton = document.getElementById("epalButton");
+      const epalCountElem = document.getElementById("epalCount");
+      let userHasSentEpal = localStorage.getItem("hasSentEpal");
 
-      if (userHasSentEpal) {
-        epalButton.disabled = true;
-        document.getElementById("message").textContent =
-          "You can only send 'EPAL' once!";
-      }
+      // Function to update the counter display
+      const updateCounterDisplay = (count) => {
+        epalCountElem.textContent = count;
+      };
 
+      // Fetch the current count from Firebase
+      onValue(epalCountRef, (snapshot) => {
+        const count = snapshot.val();
+        updateCounterDisplay(count || 0);
+      });
+
+      // Handle EPAL button click
       epalButton.addEventListener("click", function () {
         if (!userHasSentEpal) {
-          epalCount++;
-          document.getElementById("epalCount").textContent = epalCount;
-          localStorage.setItem("epalCount", epalCount);
-          localStorage.setItem("hasSentEpal", true);
-          epalButton.disabled = true;
-          document.getElementById(
-            "message"
-          ).textContent = `Thank you for sending "EPAL"!`;
+          runTransaction(epalCountRef, (currentCount) => {
+            return (currentCount || 0) + 1; // Increment the count in the database
+          })
+            .then(() => {
+              localStorage.setItem("hasSentEpal", true); // Prevent the user from sending another EPAL
+              epalButton.disabled = true;
+              document.getElementById("message").textContent =
+                "Thank you for sending 'EPAL'!";
+            })
+            .catch((error) => {
+              console.error("Transaction failed: ", error);
+            });
         } else {
           document.getElementById("message").textContent =
             "You can only send 'EPAL' once!";
         }
       });
 
-      // // Handle Reset button click
-      // const resetButton = document.getElementById("resetButton");
-      // resetButton.addEventListener("click", function () {
-      //   localStorage.removeItem("epalCount"); // Clear EPAL count from localStorage
-      //   localStorage.removeItem("hasSentEpal"); // Clear user's submission status
-      //   epalCount = 0; // Reset the count variable
-      //   document.getElementById("epalCount").textContent = epalCount; // Update the count display
-      //   epalButton.disabled = false; // Enable the EPAL button
-      //   document.getElementById("message").textContent = ""; // Clear any messages
-      // });
+      // Disable the button if the user has already sent EPAL
+      if (userHasSentEpal) {
+        epalButton.disabled = true;
+        document.getElementById("message").textContent =
+          "You can only send 'EPAL' once!";
+      }
     </script>
   </body>
 </html>
